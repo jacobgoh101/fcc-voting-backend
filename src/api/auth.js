@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateWithProvider } from "../lib/util";
+import { validateWithProvider, createJwt, verifyJwt } from "../lib/util";
 const pino = require("pino")();
 
 export default ({ config, db }) => {
@@ -13,7 +13,10 @@ export default ({ config, db }) => {
     // Validate the social token with Facebook
     validateWithProvider(network, socialToken)
       .then(function(profile) {
-        res.rest.success("Authenticated as: " + profile.email);
+        res.rest.success({
+          message: "Authenticated as: " + profile.email,
+          token: createJwt(profile)
+        });
       })
       .catch(function(err) {
         res.rest.unauthorized("Failed!" + err.message);

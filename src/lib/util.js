@@ -1,5 +1,7 @@
 import axios from "axios";
 const pino = require("pino")();
+import jwt from "jsonwebtoken";
+import Promise from "bluebird";
 
 /**	Creates a callback that proxies node callback style arguments to an Express Response object.
  *	@param {express.Response} res	Express HTTP Response
@@ -31,7 +33,7 @@ const providers = {
   }
 };
 export const validateWithProvider = (network, socialToken) => {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     // Send a GET request to Facebook with the token as query string
     axios({
       method: "get",
@@ -39,7 +41,6 @@ export const validateWithProvider = (network, socialToken) => {
       params: { access_token: socialToken }
     })
       .then(res => {
-        pino.info(res);
         if (res.status == 200) {
           resolve(res.data);
         }
@@ -49,5 +50,33 @@ export const validateWithProvider = (network, socialToken) => {
           reject(err);
         }
       });
+  });
+};
+
+export const createJwt = profile => {
+  const payload = {
+    email: profile.email
+  };
+  return jwt.sign(payload, process.env.JWT_PRIVATE_KEY, {
+    // expiresIn: '2h',
+    issuer: process.env.JWT_ISSUER
+  });
+};
+
+export const verifyJwt = jwtString => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      jwtString,
+      process.env.JWT_PRIVATE_KEY,
+      {
+        issuer: process.env.JWT_ISSUER
+      },
+      (err, decoded) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(decoded);
+      }
+    );
   });
 };
