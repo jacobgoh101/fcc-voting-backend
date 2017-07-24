@@ -2214,6 +2214,10 @@ mongodb@2.2.27:
     mongodb-core "2.1.11"
     readable-stream "2.2.7"
 
+mongoose-find-one-or-create@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/mongoose-find-one-or-create/-/mongoose-find-one-or-create-0.2.0.tgz#ca7d80ee7871fd0e95116784872c685ec7f82097"
+
 mongoose@^4.11.4:
   version "4.11.4"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.11.4.tgz#3d74111105ee8b619eb1c1d790e7bfc4e8cba7bb"

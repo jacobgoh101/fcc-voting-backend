@@ -39,6 +39,7 @@
     "express-rest-response": "^1.2.0",
     "jsonwebtoken": "^7.4.1",
     "mongoose": "^4.11.4",
+    "mongoose-find-one-or-create": "^0.2.0",
     "morgan": "^1.8.0",
     "pino": "^4.7.1",
     "resource-router-middleware": "^0.6.0"
