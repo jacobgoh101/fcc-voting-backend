@@ -29,6 +29,7 @@
   "author": "Jason Miller <jason@developit.ca>",
   "license": "MIT",
   "dependencies": {
+    "assert": "^1.4.1",
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
     "body-parser": "^1.13.3",
@@ -38,8 +39,7 @@
     "express": "^4.13.3",
     "express-rest-response": "^1.2.0",
     "jsonwebtoken": "^7.4.1",
-    "mongoose": "^4.11.4",
-    "mongoose-find-one-or-create": "^0.2.0",
+    "mongodb": "^2.2.30",
     "morgan": "^1.8.0",
     "pino": "^4.7.1",
     "resource-router-middleware": "^0.6.0"

@@ -1,15 +1,23 @@
-const mongoose = require("mongoose");
+const Promise = require("bluebird");
+const mongodb = Promise.promisifyAll(require("mongodb"));
 const pino = require("pino")();
 
 export default callback => {
   // connect to a database if needed, then pass it to `callback`:
 
-  mongoose.connect("mongodb://localhost:27017/fcc_voting");
-  const db = mongoose.connection;
-  db.on("error", console.error.bind(console, "connection error:"));
-  db.once("open", () => {
-    pino.info("Database connected");
-  });
+  var MongoClient = mongodb.MongoClient;
 
-  callback(db);
+  var url = "mongodb://localhost:27017/fcc_voting";
+
+  MongoClient.connect(url, function(err, db) {
+    if (err) {
+      pino.error("Unable to connect to the mongoDB server. Error:", err);
+    } else {
+      pino.info("Connection established to", url);
+
+      callback(db);
+
+      // db.close();
+    }
+  });
 };

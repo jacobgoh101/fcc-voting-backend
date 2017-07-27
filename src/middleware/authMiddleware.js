@@ -6,6 +6,7 @@ export default (req, res, next) => {
   jwt = jwt.trim();
   verifyJwt(jwt)
     .then(decoded => {
+      req.userEmail = decoded.email;
       next();
     })
     .catch(err => {
