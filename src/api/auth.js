@@ -1,6 +1,19 @@
 import {Router} from "express";
 import {validateWithProvider, createJwt, verifyJwt} from "../lib/util";
 const pino = require("pino")();
+const Promise = require("bluebird");
+const BaseJoi = require('joi');
+const Extension = require('joi-date-extensions');
+const Joi = Promise.promisifyAll(BaseJoi.extend(Extension));
+
+const schema = Joi
+  .object()
+  .keys({
+    email: Joi
+      .string()
+      .email()
+      .required()
+  });
 
 export default({config, db}) => {
   let api = Router();
@@ -24,11 +37,15 @@ export default({config, db}) => {
         .toArrayAsync();
     }).then(result => {
       if (result.length === 0) {
-        return userCollection.insertOneAsync(data);
-      }else{
+        return Joi
+          .validateAsync(data, schema)
+          .then(value => {
+            return userCollection.insertOneAsync(data);
+          })
+      } else {
         data = result;
       }
-      return;
+      return result;
     }).then(result => {
       res
         .rest
