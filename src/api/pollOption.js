@@ -1,5 +1,6 @@
 import {Router} from "express";
 const authMiddleware = require('../middleware/authMiddleware');
+const pollExistMiddleware = require('../middleware/pollExistMiddleware');
 const Promise = require("bluebird");
 const mongodb = Promise.promisifyAll(require('mongodb'));
 const pino = require("pino")();
@@ -21,7 +22,7 @@ export default({config, db}) => {
           .rest
           .success(result);
       })
-      .catch(err => res.rest.unauthorized(err));
+      .catch(err => res.rest.forbidden(err));
   });
 
   api.get("/:id", (req, res) => {
@@ -35,10 +36,12 @@ export default({config, db}) => {
           .rest
           .success(result);
       })
-      .catch(err => res.rest.unauthorized(err));
+      .catch(err => res.rest.forbidden(err));
   });
 
-  api.post("/", authMiddleware, (req, res) => {
+  api.post("/", [
+    authMiddleware, pollExistMiddleware
+  ], (req, res) => {
     const data = req.body;
     if (!data.created_by) 
       data.created_by = req.userId;
@@ -52,7 +55,7 @@ export default({config, db}) => {
           .rest
           .success(data);
       })
-      .catch(err => res.rest.unauthorized(err));
+      .catch(err => res.rest.forbidden(err));
   });
 
   return api;

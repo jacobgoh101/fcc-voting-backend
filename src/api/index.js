@@ -4,6 +4,7 @@ import facets from "./facets";
 import auth from "./auth";
 import poll from "./poll";
 import pollOption from "./pollOption";
+import vote from "./vote";
 
 export default ({ config, db }) => {
   let api = Router();
@@ -16,6 +17,8 @@ export default ({ config, db }) => {
   api.use("/poll", poll({ config, db }));
 
   api.use("/pollOption", pollOption({ config, db }));
+
+  api.use("/vote", vote({ config, db }));
 
   // perhaps expose some API metadata at the root
   api.get("/", (req, res) => {

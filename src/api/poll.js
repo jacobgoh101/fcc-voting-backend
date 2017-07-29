@@ -22,7 +22,7 @@ export default({config, db}) => {
           .rest
           .success(result);
       })
-      .catch(err => res.rest.unauthorized(err));
+      .catch(err => res.rest.forbidden(err));
   });
 
   api.get("/:id", (req, res) => {
@@ -47,7 +47,7 @@ export default({config, db}) => {
           .rest
           .success(poll);
       })
-      .catch(err => res.rest.unauthorized(err));
+      .catch(err => res.rest.forbidden(err));
   });
 
   api.post("/", authMiddleware, (req, res) => {
@@ -66,7 +66,7 @@ export default({config, db}) => {
           .rest
           .success(data);
       })
-      .catch(err => res.rest.unauthorized(err));
+      .catch(err => res.rest.forbidden(err));
   });
 
   return api;

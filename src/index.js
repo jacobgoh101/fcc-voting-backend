@@ -17,40 +17,32 @@ app.server = http.createServer(app);
 app.use(morgan("dev"));
 
 // 3rd party middleware
-app.use(
-  cors({
-    exposedHeaders: config.corsHeaders
-  })
-);
+app.use(cors({exposedHeaders: config.corsHeaders}));
 
-app.use(
-  bodyParser.json({
-    limit: config.bodyLimit
-  })
-);
+app.use(bodyParser.json({limit: config.bodyLimit}));
 
 // json response middleware
-app.use(
-  restResponse({
-    showStatusCode: true,
-    showDefaultMessage: true
-  })
-);
+app.use(restResponse({showStatusCode: true, showDefaultMessage: true}));
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 
 // connect to db
 initializeDb(db => {
+  // set db as global object
+  app.set('db', db);
+
   // internal middleware
-  app.use(middleware({ config, db }));
+  app.use(middleware({config, db}));
 
   // api router
-  app.use("/api", api({ config, db }));
+  app.use("/api", api({config, db}));
 
-  app.server.listen(process.env.PORT || config.port, () => {
-    console.log(`Started on port ${app.server.address().port}`);
-  });
+  app
+    .server
+    .listen(process.env.PORT || config.port, () => {
+      console.log(`Started on port ${app.server.address().port}`);
+    });
 });
 
 export default app;
