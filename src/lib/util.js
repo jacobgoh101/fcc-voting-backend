@@ -14,12 +14,15 @@ import Promise from "bluebird";
  */
 export function toRes(res, status = 200) {
   return (err, thing) => {
-    if (err) return res.status(500).send(err);
-
+    if (err) 
+      return res.status(500).send(err);
+    
     if (thing && typeof thing.toObject === "function") {
       thing = thing.toObject();
     }
-    res.status(status).json(thing);
+    res
+      .status(status)
+      .json(thing);
   };
 }
 
@@ -38,24 +41,24 @@ export const validateWithProvider = (network, socialToken) => {
     axios({
       method: "get",
       url: providers[network].url,
-      params: { access_token: socialToken }
-    })
-      .then(res => {
-        if (res.status == 200) {
-          resolve(res.data);
-        }
-      })
-      .catch(err => {
-        if (err) {
-          reject(err);
-        }
-      });
+      params: {
+        access_token: socialToken
+      }
+    }).then(res => {
+      if (res.status == 200) {
+        resolve(res.data);
+      }
+    }).catch(err => {
+      if (err) {
+        reject(err);
+      }
+    });
   });
 };
 
 export const createJwt = profile => {
   const payload = {
-    email: profile.email
+    ...profile
   };
   return jwt.sign(payload, process.env.JWT_PRIVATE_KEY, {
     // expiresIn: '2h',
@@ -65,18 +68,13 @@ export const createJwt = profile => {
 
 export const verifyJwt = jwtString => {
   return new Promise((resolve, reject) => {
-    jwt.verify(
-      jwtString,
-      process.env.JWT_PRIVATE_KEY,
-      {
-        issuer: process.env.JWT_ISSUER
-      },
-      (err, decoded) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(decoded);
+    jwt.verify(jwtString, process.env.JWT_PRIVATE_KEY, {
+      issuer: process.env.JWT_ISSUER
+    }, (err, decoded) => {
+      if (err) {
+        reject(err);
       }
-    );
+      resolve(decoded);
+    });
   });
 };

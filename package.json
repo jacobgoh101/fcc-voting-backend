@@ -38,6 +38,8 @@
     "dotenv": "^4.0.0",
     "express": "^4.13.3",
     "express-rest-response": "^1.2.0",
+    "joi": "^10.6.0",
+    "joi-date-extensions": "^1.0.2",
     "jsonwebtoken": "^7.4.1",
     "mongodb": "^2.2.30",
     "morgan": "^1.8.0",
