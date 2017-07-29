@@ -6,15 +6,14 @@ const pino = require("pino")();
 const BaseJoi = require('joi');
 const Extension = require('joi-date-extensions');
 const Joi = Promise.promisifyAll(BaseJoi.extend(Extension));
-const pollSchema = require('../models/poll');
+const pollOptionSchema = require('../models/pollOption');
 
 export default({config, db}) => {
   let api = Router();
-  const pollCollection = db.collection("poll");
   const pollOptionCollection = db.collection("pollOption");
 
   api.get("/", (req, res) => {
-    pollCollection
+    pollOptionCollection
       .find({})
       .toArrayAsync()
       .then(result => {
@@ -27,39 +26,26 @@ export default({config, db}) => {
 
   api.get("/:id", (req, res) => {
     const id = req.params.id;
-    pollCollection
+    pollOptionCollection
       .findOneAsync({
       _id: new mongodb.ObjectID(id)
     })
-      .then(poll => {
-        return pollOptionCollection
-          .find({
-          poll_id: String(poll._id)
-        })
-          .toArrayAsync()
-          .then(options => {
-            poll['options'] = options;
-            return poll;
-          });
-      })
-      .then(poll => {
+      .then(result => {
         res
           .rest
-          .success(poll);
+          .success(result);
       })
       .catch(err => res.rest.unauthorized(err));
   });
 
   api.post("/", authMiddleware, (req, res) => {
     const data = req.body;
-    if (!data.created_date) 
-      data.created_date = new Date();
     if (!data.created_by) 
       data.created_by = req.userId;
     Joi
-      .validateAsync(data, pollSchema)
+      .validateAsync(data, pollOptionSchema)
       .then(value => {
-        return pollCollection.insertOneAsync(data)
+        return pollOptionCollection.insertOneAsync(data)
       })
       .then(result => {
         res
