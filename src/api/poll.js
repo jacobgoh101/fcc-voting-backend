@@ -12,11 +12,30 @@ export default({config, db}) => {
   let api = Router();
   const pollCollection = db.collection("poll");
   const pollOptionCollection = db.collection("pollOption");
+  const userCollection = db.collection("user");
 
   api.get("/", (req, res) => {
     pollCollection
       .find({})
       .toArrayAsync()
+      .then(result => {
+        let promiseArr = result.map((poll, index) => {
+          console.log(new mongodb.ObjectID(poll.created_by))
+          return userCollection
+            .findOneAsync({
+            _id: new mongodb.ObjectID(poll.created_by)
+          })
+            .then(user => {
+              result[index].created_by_email = user.email;
+              return result[index];
+            })
+            .catch(err => {
+              result[index].created_by_email = "not found";
+              return result[index];
+            })
+        });
+        return Promise.all(promiseArr);
+      })
       .then(result => {
         res
           .rest
@@ -31,6 +50,16 @@ export default({config, db}) => {
       .findOneAsync({
       _id: new mongodb.ObjectID(id)
     })
+      .then(poll => {
+        return userCollection
+          .findOneAsync({
+          _id: new mongodb.ObjectID(poll.created_by)
+        })
+          .then(user => {
+            poll.created_by_email = user.email;
+            return poll;
+          })
+      })
       .then(poll => {
         return pollOptionCollection
           .find({
