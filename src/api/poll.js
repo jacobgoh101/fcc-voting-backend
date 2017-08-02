@@ -15,68 +15,82 @@ export default({config, db}) => {
   const userCollection = db.collection("user");
 
   api.get("/", (req, res) => {
-    pollCollection
-      .find({})
-      .toArrayAsync()
-      .then(result => {
-        let promiseArr = result.map((poll, index) => {
-          console.log(new mongodb.ObjectID(poll.created_by))
-          return userCollection
-            .findOneAsync({
+    (async() => {
+      try {
+        let result = await pollCollection
+          .find({})
+          .toArrayAsync();
+
+        let promiseArr = result.map(async(poll, index) => {
+          let user = await userCollection.findOneAsync({
             _id: new mongodb.ObjectID(poll.created_by)
-          })
-            .then(user => {
-              result[index].created_by_email = user.email;
-              return result[index];
-            })
-            .catch(err => {
-              result[index].created_by_email = "not found";
-              return result[index];
-            })
+          });
+          if (user.email) 
+            result[index].created_by_email = user.email;
+          else 
+            result[index].created_by_email = "";
+          return result[index];
         });
-        return Promise.all(promiseArr);
-      })
-      .then(result => {
+
+        result = await Promise.all(promiseArr);
         res
           .rest
           .success(result);
-      })
-      .catch(err => res.rest.forbidden(err));
+      } catch (err) {
+        if(err.message) err = err.message;
+        res
+          .rest
+          .forbidden(err);
+      }
+    })();
   });
 
   api.get("/:id", (req, res) => {
     const id = req.params.id;
-    pollCollection
-      .findOneAsync({
-      _id: new mongodb.ObjectID(id)
-    })
-      .then(poll => {
-        return userCollection
-          .findOneAsync({
+    (async() => {
+      try {
+        let poll = await pollCollection.findOneAsync({
+          _id: new mongodb.ObjectID(id)
+        });
+        let user = await userCollection.findOneAsync({
           _id: new mongodb.ObjectID(poll.created_by)
-        })
-          .then(user => {
-            poll.created_by_email = user.email;
-            return poll;
-          })
-      })
-      .then(poll => {
-        return pollOptionCollection
+        });
+        poll.created_by_email = user.email;
+        let options = await pollOptionCollection
           .find({
           poll_id: String(poll._id)
         })
-          .toArrayAsync()
-          .then(options => {
-            poll['options'] = options;
-            return poll;
-          });
-      })
-      .then(poll => {
+          .toArrayAsync();
+        poll['options'] = options;
         res
           .rest
           .success(poll);
-      })
-      .catch(err => res.rest.forbidden(err));
+      } catch (err) {
+        if(err.message) err = err.message;
+        res
+          .rest
+          .forbidden(err);
+      }
+    })();
+  });
+
+  api.get("/user/:userId", (req, res) => {
+    const userId = req.params.userId;
+    (async() => {
+      try {
+        let polls = await pollCollection
+          .find({created_by: userId})
+          .toArrayAsync();
+        res
+          .rest
+          .success(polls);
+      } catch (err) {
+        if(err.message) err = err.message;
+        res
+          .rest
+          .forbidden(err);
+      }
+    })();
   });
 
   api.post("/", authMiddleware, (req, res) => {
@@ -85,17 +99,21 @@ export default({config, db}) => {
       data.created_date = new Date();
     if (!data.created_by) 
       data.created_by = req.userId;
-    Joi
-      .validateAsync(data, pollSchema)
-      .then(value => {
-        return pollCollection.insertOneAsync(data)
-      })
-      .then(result => {
+    
+    (async() => {
+      try {
+        await Joi.validateAsync(data, pollSchema);
+        await pollCollection.insertOneAsync(data);
         res
           .rest
           .success(data);
-      })
-      .catch(err => res.rest.forbidden(err));
+      } catch (err) {
+        if(err.message) err = err.message;
+        res
+          .rest
+          .forbidden(err);
+      }
+    })();
   });
 
   return api;

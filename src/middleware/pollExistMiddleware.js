@@ -7,15 +7,21 @@ module.exports = (req, res, next) => {
     .app
     .get('db');
   const pollCollection = db.collection('poll');
-  pollCollection
-    .findOneAsync({
-    _id: new mongodb.ObjectID(poll_id)
-  })
-    .then(result => {
-      if (!result) 
+  (async() => {
+    try {
+      let poll = await pollCollection.findOneAsync({
+        _id: new mongodb.ObjectID(poll_id)
+      })
+      if (!poll) 
         res.rest.forbidden('Poll Id does not exist');
       else 
         next()
-    })
-    .catch(err => res.rest.forbidden(err));
+    } catch (err) {
+      if (err.message) 
+        err = err.message;
+      res
+        .rest
+        .forbidden(err)
+    }
+  })();
 };

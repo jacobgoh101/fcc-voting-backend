@@ -37,22 +37,25 @@ const providers = {
 };
 export const validateWithProvider = (network, socialToken) => {
   return new Promise((resolve, reject) => {
-    // Send a GET request to Facebook with the token as query string
-    axios({
-      method: "get",
-      url: providers[network].url,
-      params: {
-        access_token: socialToken
-      }
-    }).then(res => {
-      if (res.status == 200) {
-        resolve(res.data);
-      }
-    }).catch(err => {
-      if (err) {
+    // Send a GET request to provider with the token as query string
+    (async() => {
+      try {
+        const res = await axios({
+          method: "get",
+          url: providers[network].url,
+          params: {
+            access_token: socialToken
+          }
+        });
+        if (res.status == 200) {
+          resolve(res.data);
+        }else{
+          reject('Fail to authenticate with provider.')
+        }
+      } catch (err) {
         reject(err);
       }
-    });
+    })();
   });
 };
 

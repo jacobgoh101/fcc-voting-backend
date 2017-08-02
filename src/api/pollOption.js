@@ -13,30 +13,23 @@ export default({config, db}) => {
   let api = Router();
   const pollOptionCollection = db.collection("pollOption");
 
-  api.get("/", (req, res) => {
-    pollOptionCollection
-      .find({})
-      .toArrayAsync()
-      .then(result => {
-        res
-          .rest
-          .success(result);
-      })
-      .catch(err => res.rest.forbidden(err));
-  });
-
   api.get("/:id", (req, res) => {
     const id = req.params.id;
-    pollOptionCollection
-      .findOneAsync({
-      _id: new mongodb.ObjectID(id)
-    })
-      .then(result => {
+    (async() => {
+      try {
+        let option = await pollOptionCollection.findOneAsync({
+          _id: new mongodb.ObjectID(id)
+        });
         res
           .rest
-          .success(result);
-      })
-      .catch(err => res.rest.forbidden(err));
+          .success(option);
+      } catch (err) {
+        if(err.message) err = err.message;
+        res
+          .rest
+          .forbidden(err);
+      }
+    })();
   });
 
   api.post("/", [
@@ -45,17 +38,21 @@ export default({config, db}) => {
     const data = req.body;
     if (!data.created_by) 
       data.created_by = req.userId;
-    Joi
-      .validateAsync(data, pollOptionSchema)
-      .then(value => {
-        return pollOptionCollection.insertOneAsync(data)
-      })
-      .then(result => {
+    
+    (async() => {
+      try {
+        await Joi.validateAsync(data, pollOptionSchema)
+        await pollOptionCollection.insertOneAsync(data)
         res
           .rest
           .success(data);
-      })
-      .catch(err => res.rest.forbidden(err));
+      } catch (err) {
+        if(err.message) err = err.message;
+        res
+          .rest
+          .forbidden(err);
+      }
+    })();
   });
 
   return api;
