@@ -13,6 +13,7 @@ export default({config, db}) => {
   const pollCollection = db.collection("poll");
   const pollOptionCollection = db.collection("pollOption");
   const userCollection = db.collection("user");
+  const voteCollection = db.collection("vote");
 
   api.get("/", (req, res) => {
     (async() => {
@@ -37,7 +38,8 @@ export default({config, db}) => {
           .rest
           .success(result);
       } catch (err) {
-        if(err.message) err = err.message;
+        if (err.message) 
+          err = err.message;
         res
           .rest
           .forbidden(err);
@@ -62,11 +64,18 @@ export default({config, db}) => {
         })
           .toArrayAsync();
         poll['options'] = options;
+        let votes = await voteCollection
+          .find({
+          poll_id: String(poll._id)
+        })
+          .toArrayAsync();
+        poll['votes'] = votes;
         res
           .rest
           .success(poll);
       } catch (err) {
-        if(err.message) err = err.message;
+        if (err.message) 
+          err = err.message;
         res
           .rest
           .forbidden(err);
@@ -85,7 +94,8 @@ export default({config, db}) => {
           .rest
           .success(polls);
       } catch (err) {
-        if(err.message) err = err.message;
+        if (err.message) 
+          err = err.message;
         res
           .rest
           .forbidden(err);
@@ -108,7 +118,44 @@ export default({config, db}) => {
           .rest
           .success(data);
       } catch (err) {
-        if(err.message) err = err.message;
+        if (err.message) 
+          err = err.message;
+        res
+          .rest
+          .forbidden(err);
+      }
+    })();
+  });
+
+  api.delete("/:poll_id", authMiddleware, (req, res) => {
+    const poll_id = req.params.poll_id;
+    const userId = req.userId;
+
+    (async() => {
+      try {
+        // check if this user is owner
+        let poll = await pollCollection.findOneAsync({
+          _id: new mongodb.ObjectID(poll_id),
+          created_by: userId
+        });
+        if (!poll) {
+          res
+            .rest
+            .forbidden('This is not the creator of this poll.');
+          return;
+        }
+
+        await pollCollection.deleteOneAsync({
+          _id: new mongodb.ObjectID(poll_id)
+        });
+        await pollOptionCollection.deleteManyAsync({poll_id: poll_id});
+        await voteCollection.deleteManyAsync({poll_id: poll_id});
+        res
+          .rest
+          .success(`Poll ${poll_id} deleted`);
+      } catch (err) {
+        if (err.message) 
+          err = err.message;
         res
           .rest
           .forbidden(err);

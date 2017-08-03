@@ -73,7 +73,7 @@ export default({config, db}) => {
     (async() => {
       try {
         // check if this user already vote for this poll
-        let vote = voteCollection.findOneAsync({created_by: data.created_by, poll_id: data.poll_id});
+        let vote = await voteCollection.findOneAsync({created_by: data.created_by, poll_id: data.poll_id});
         if (!vote) {
           throw "This user hasn't vote for this poll yet";
         }
