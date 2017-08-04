@@ -7,7 +7,7 @@ export default callback => {
 
   var MongoClient = mongodb.MongoClient;
 
-  var url = "mongodb://localhost:27017/fcc_voting";
+  var url = process.env.DB_CONN_URL;
 
   MongoClient.connect(url, function(err, db) {
     if (err) {
