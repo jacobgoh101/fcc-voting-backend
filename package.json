@@ -7,7 +7,6 @@
     "dev": "nodemon -w src --exec \"babel-node src --presets es2015,stage-0\"",
     "build": "babel src -s -D -d dist --presets es2015,stage-0 --plugins transform-runtime",
     "start": "node dist",
-    "prestart": "npm run -s build",
     "test": "eslint src",
     "db": "mongod --port 27017 --dbpath=./data"
   },
